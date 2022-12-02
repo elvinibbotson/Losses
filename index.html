@@ -4,14 +4,14 @@
     <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="black">
-    <title>joule</title>
-    <link rel="stylesheet" type="text/css" href="jouleStyles.css">
-    <link rel="manifest" href="jouleManifest.json">
-    <meta name="application-name" content="joule">
+    <title>watt</title>
+    <link rel="stylesheet" type="text/css" href="wattStyles.css">
+    <link rel="manifest" href="wattManifest.json">
+    <meta name="application-name" content="watt">
 </head>
 <body>
     
-<div id='header'><span id='headerTitle'>Joule projects</span><span id='headerValue'></span></div>
+<div id='header'><span id='headerTitle'>projects</span><span id='headerValue'></span></div>
 
 <div id="main">
 	<ul id="list"></ul>
@@ -32,10 +32,10 @@
 		<option value='severe'>severe</option>
 	</select></p>
     <div class="dialog-buttons">
+    	<button id="cancelProject" class="icon-button"></button>
     	<button id='addProject' class='icon-button'></button>
 		<button id='saveProject' class='icon-button'></button>
 		<button id='deleteProject' class='icon-button'></button>
-		<button id="cancelProject" class="icon-button"></button>
 	</div>
 </div>
 
@@ -57,10 +57,10 @@
     <div class='dialog-field'>area <input type='number' id='elementArea' maxlength='3' size='3' step='1'/>m2</div>
     <div id='uVal' class='dialog-field'>U-value <input type='number' id='elementUval' maxlength='4' size='4'/>W/m2K</div>
     <div class="dialog-buttons">
+    	<button id="cancelElement" class="icon-button"></button>
     	<button id='addElement' class='icon-button'></button>
 		<button id='saveElement' class='icon-button'></button>
 		<button id='deleteElement' class='icon-button'></button>
-		<button id="cancelElement" class="icon-button"></button>
 	</div>
 </div>
 
@@ -95,6 +95,7 @@
     <div id='layerDialogTitle' class='dialog-title'>layer</div>
     <select id ='material'></select>
     <p>thickness <input type='number' id='thickness' maxlength='3' size='3' step='1'/>mm</p>
+    <p id='fractionLine'>fraction <input type='number' id='fraction' maxlength='3' size='3' step='1'/>%</p>
     <div class="dialog-buttons">
     	<button id="cancelLayer" class="icon-button"></button>
     	<button id="addLayer" class="icon-button"></button>
@@ -108,8 +109,8 @@
 	<div id='pseudoLayerDialogTitle' class='dialog-title'>pseudo-layer</div>
 	<select id='pseudoLayers'></select>
 	<div class="dialog-buttons">
-    	<button id="addPseudoLayer" class="icon-button"></button>
 		<button id="cancelPseudoLayer" class="icon-button"></button>
+    	<button id="addPseudoLayer" class="icon-button"></button>
 	</div>
 </div>
 
@@ -117,12 +118,12 @@
     <div id='noteTitle' class='dialog-title'>name/description</div>
     <input type='text' id="materialName" size="15"/>
     <div class="dialog-buttons">
+    	<button id="cancelMaterial" class="icon-button"></button>
     	<button id="saveMaterial" class="icon-button"></button>
-        <button id="cancelMaterial" class="icon-button"></button>
 	</div>
 </div>
 
-<div id='settingsDialog' class='dialog'>
+<!--div id='settingsDialog' class='dialog'>
 	<div id='noteTitle' class='dialog-title'>project settings</div>
 	<p>temperature delta (internal-external)</p>
 	<p><input type=number id='delta' max='30' min='10' maxlength='2' size='2' step='1'>K</p>
@@ -136,12 +137,12 @@
     	<button id="saveSettings" class="icon-button"></button>
         <button id="cancelSettings" class="icon-button"></button>
 	</div>
-</div>
+</div-->
 
 <div id='dataDialog' class='dialog'>
 	<button id='dataBackup' class='text-button'>BACKUP</button>
 	<button id='dataImport' class='text-button'>IMPORT</button>
-	<button id='dataCancel' class='text-button'>CANCEL</button>
+	<button id='dataCancel' class='icon-button'></button>
 </div>
 
 <div id="importDialog" class="dialog">
@@ -152,6 +153,6 @@
 	</div>
 </div>
 
-<script src="jouleApp.js" async></script>
+<script src="wattApp.js" async></script>
 </body>
 </html>
