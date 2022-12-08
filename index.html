@@ -4,155 +4,72 @@
     <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="black">
-    <title>watt</title>
-    <link rel="stylesheet" type="text/css" href="wattStyles.css">
-    <link rel="manifest" href="wattManifest.json">
-    <meta name="application-name" content="watt">
+    <title>bodley</title>
+    <link rel="stylesheet" type="text/css" href="bodleyStyles.css">
+    <link rel="manifest" href="bodleyManifest.json">
+    <meta name="application-name" content="bodley">
 </head>
 <body>
     
-<div id='header'><span id='headerTitle'>projects</span><span id='headerValue'></span></div>
+<div id='header'>
+    <div id='heading'>Bodley</div>
+  </div>
 
 <div id="main">
 	<ul id="list"></ul>
 </div>
 
-<div id='newButton' class='action-button'><img src='newButton24px.svg'/></div>
+<div id='buttonNew' class='round-button'><img src='addButton24px.svg'/></div>
 
-<div id='projectDialog' class='dialog'>
-	<div id='projectDialogTitle' class='dialog-title'>project</div>
-	<div class='dialog-body'>name...</div>
-    <input type="text" id="projectName" size="15"/>
-    <p>temperature delta (internal-external)...<br>
-	<input type=number id='delta' max='30' min='10' maxlength='2' size='2' step='1'>K</p>
-	<p>exposure...<br>
-	<select id='exposure'>
-		<option value='sheltered'>sheltered</option>
-		<option value='moderate'>moderate</option>
-		<option value='severe'>severe</option>
-	</select></p>
+<div id='displayDialog' class='dialog'><p id='message'>Swipe left to close dialogs<br>Swipe right to go back</p></div>
+
+<div id="addDialog" class='dialog'>
+	<button id="cancelAddButton" class="icon-button"></button>
+	<button id='addListButton' class='text-button'>LIST</button>
+	<button id='addNoteButton' class='text-button'>NOTE</button>
+</div>
+
+<div id='listDialog' class='dialog'>
+    <div id='listDialogTitle' class='dialog-title'>list</div>
+    <p><input type="text" id="listField" size="15"/></p>
+    <p><input type='checkbox' id='checkBoxes'>checkboxes</p>
+    <p><input type='checkbox' id='checkAlpha'>alphabetical</p>
     <div class="dialog-buttons">
-    	<button id="cancelProject" class="icon-button"></button>
-    	<button id='addProject' class='icon-button'></button>
-		<button id='saveProject' class='icon-button'></button>
-		<button id='deleteProject' class='icon-button'></button>
+    	<button id="deleteListButton" class="icon-button"></button>
+    	<button id="cancelListButton" class="icon-button"></button>
+    	<button id="listSaveButton" class="icon-button"></button>
+    	<button id="listAddButton" class="icon-button"></button>
 	</div>
 </div>
 
-<div id='addElementDialog' class='dialog'>
-	<div id='addElementDialogTitle' class='dialog-title'>add new element</div>
-	<div>
-		<button id='wall' class='text-button'>wall...</button>
-		<button id='roof' class='text-button'>roof...</button>
-		<button id='floor' class='text-button'>floor..</button>
-		<button id='opening' class='text-button'>opening</button>
-		<button id="cancelAddElement" class="icon-button"></button>
-	</div>
-</div>
-
-<div id='elementDialog' class='dialog'>
-	<div id='elementDialogTitle' class='dialog-title'>element</div>
-    <div class='dialog-body'>name/description...</div>
-    <input type="text" id="elementName" size="15"/>
-    <div class='dialog-field'>area <input type='number' id='elementArea' maxlength='3' size='3' step='1'/>m2</div>
-    <div id='uVal' class='dialog-field'>U-value <input type='number' id='elementUval' maxlength='4' size='4'/>W/m2K</div>
+<div id='noteDialog' class='dialog'>
+    <div id='noteTitle' class='dialog-title'>note</div>
+    <textarea id="noteField" rows='5' cols='30'></textarea>
+    <br>
     <div class="dialog-buttons">
-    	<button id="cancelElement" class="icon-button"></button>
-    	<button id='addElement' class='icon-button'></button>
-		<button id='saveElement' class='icon-button'></button>
-		<button id='deleteElement' class='icon-button'></button>
+    	<button id="deleteNoteButton" class="icon-button"></button>
+    	<button id="cancelNoteButton" class="icon-button"></button>
+    	<button id="noteSaveButton" class="icon-button"></button>
+    	<button id="noteAddButton" class="icon-button"></button>
+    	<button id='noteUpButton' class='icon-button'></button>
+    	<button id='noteDownButton' class='icon-button'></button>
 	</div>
 </div>
-
-<!--div id="elementDialog" class='dialog'>
-	<div id='elementDialogTitle' class='dialog-title'>name/description</div>
-	<input type="text" id="elementName" size="15"/>
-	<p>type <select id="elementType">
-    	<option value='wall'>wall</option>
-    	<option value='floor'>floor</option>
-    	<option value='roof'>roof</option>
-    	<option value='opening'>opening</option>
-    </select></p>
-	<p>area <input type='number' id='elementArea' size=2>m2 &nbsp;&nbsp;R <button id='elementR' class='text-button'>SET</button>W/m2K</p>
-	<div class="dialog-buttons">
-		<button id='saveElement' class='icon-button'></button>
-		<button id='deleteElement' class='icon-button'></button>
-		<button id="cancelElement" class="icon-button"></button>
-	</div>
-</div-->
-
-<div id='addLayerDialog' class='dialog'>
-	<div id='newLayerDialogTitle' class='dialog-title'>new layer type...</div>
-	<div>
-		<button id='simple' class='text-button'>simple</button>
-		<button id='combi' class='text-button'>combi</button>
-		<button id='pseudo' class='text-button'>pseudo</button>
-		<button id="cancelAddLayer" class="icon-button"></button>
-	</div>
-</div>
-
-<div id='layerDialog' class='dialog'>
-    <div id='layerDialogTitle' class='dialog-title'>layer</div>
-    <select id ='material'></select>
-    <p>thickness <input type='number' id='thickness' maxlength='3' size='3' step='1'/>mm</p>
-    <p id='fractionLine'>fraction <input type='number' id='fraction' maxlength='3' size='3' step='1'/>%</p>
-    <div class="dialog-buttons">
-    	<button id="cancelLayer" class="icon-button"></button>
-    	<button id="addLayer" class="icon-button"></button>
-    	<button id="saveLayer" class="icon-button"></button>
-    	<button id="deleteLayer" class="icon-button"></button>
-		
-	</div>
-</div>
-
-<div id='pseudoLayerDialog' class='dialog'>
-	<div id='pseudoLayerDialogTitle' class='dialog-title'>pseudo-layer</div>
-	<select id='pseudoLayers'></select>
-	<div class="dialog-buttons">
-		<button id="cancelPseudoLayer" class="icon-button"></button>
-    	<button id="addPseudoLayer" class="icon-button"></button>
-	</div>
-</div>
-
-<div id='materialDialog' class='dialog'>
-    <div id='noteTitle' class='dialog-title'>name/description</div>
-    <input type='text' id="materialName" size="15"/>
-    <div class="dialog-buttons">
-    	<button id="cancelMaterial" class="icon-button"></button>
-    	<button id="saveMaterial" class="icon-button"></button>
-	</div>
-</div>
-
-<!--div id='settingsDialog' class='dialog'>
-	<div id='noteTitle' class='dialog-title'>project settings</div>
-	<p>temperature delta (internal-external)</p>
-	<p><input type=number id='delta' max='30' min='10' maxlength='2' size='2' step='1'>K</p>
-	<p>exposure</p>
-	<select id='exposure'>
-		<option value='sheltered'>sheltered</option>
-		<option value='moderate'>moderate</option>
-		<option value='severe'>severe</option>
-	</select>
-	<div class="dialog-buttons">
-    	<button id="saveSettings" class="icon-button"></button>
-        <button id="cancelSettings" class="icon-button"></button>
-	</div>
-</div-->
 
 <div id='dataDialog' class='dialog'>
-	<button id='dataBackup' class='text-button'>BACKUP</button>
-	<button id='dataImport' class='text-button'>IMPORT</button>
-	<button id='dataCancel' class='icon-button'></button>
+	<button id='dataCancelButton' class='icon-button'></button>
+	<button id='backupButton' class='text-button'>BACKUP</button>
+	<button id='importButton' class='text-button'>IMPORT</button>
 </div>
 
 <div id="importDialog" class="dialog">
 	<div class="dialog-title">Load from file</div>
 	<input type="file" id="fileChooser">
     <div class="dialog-buttons">
-		<button id="cancelImport" class="icon-button"></button>
+		<button id="cancelImportButton" class="icon-button"></button>
 	</div>
 </div>
 
-<script src="wattApp.js" async></script>
+<script src="bodleyApp.js" async></script>
 </body>
 </html>
