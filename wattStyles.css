@@ -86,7 +86,7 @@ li {
 }
 
 .item-r {
-	width: 20%;
+	width: 15%;
 	float: right;
 }
 
@@ -121,7 +121,7 @@ li {
     border: none;
     padding: 12px;
     margin: 12px;
-    float: right;
+    /* float: right; */
 }
 
 .text-button {
@@ -155,12 +155,16 @@ li {
 	padding: 13px;
 }
 
+.radio-label {
+	font-size: 1.5em;
+}
+
 #header {
 	position: fixed;
     top: 0;
     left: 0;
     width:100%;
-    height: 20px;
+    /* height: 20px; */
     padding: 10px;
     color: white;
 	font-weight: bold;
@@ -198,29 +202,32 @@ li {
     padding: 0 0.5em;
 }
 
-#elementArea, #thickness, #fraction {
+#elementArea, #thickness, #fraction, #materialThickness, #materialR, #materialV {
 	width: 50px;
 }
 
 #elementUval {
 	width: 70px;
 }
-
+/*
 #cancelProject, #cancelAddElement, #cancelElement, #cancelAddLayer, #cancelLayer, #cancelMaterial, #dataCancel, #cancelImport{
     background: url(cancelButton24px.svg) center center no-repeat;
 }
-
+*/
 #deleteProject, #deleteElement, #deleteLayer {
 	float: left;
+	margin-right: 48px;
 	background: url(deleteButton24px.svg) center center no-repeat;
 }
 
-#saveProject, #saveElement, #saveLayer, #saveMaterial {
+#saveProject, #saveElement, #saveLayer {
     background: url(okButton24px.svg) center center no-repeat;
+    float: right;
 }
 
-#addProject, #addElement, #addLayer {
-	background: url(addButton24px.svg) center center no-repeat;
+#addProject, #addElement, #addLayer, #addMaterial {
+	background: url(newButton24px.svg) center center no-repeat;
+	float: right;
 }
 
 #fileChooser {

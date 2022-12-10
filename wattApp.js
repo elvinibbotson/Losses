@@ -15,7 +15,7 @@ var materials=[]; // all defined materials
 var material=null;
 var list={};
 var currentListItem=null;
-var currentDialog=null;
+var currentDialog='messageDialog';
 var depth=0; // 0 is project list; 1 is element list; 2 is layer laist
 var lastSave=null;
 var dragStart={};
@@ -39,6 +39,9 @@ id('main').addEventListener('touchend', function(event) {
         console.log('bck to depth '+depth);
         if(depth>0) loadElements(); // back to elements...
         else loadProjects(); // ...or projects list
+    }
+    else if(drag.x>50) { // drag left to close dialogs
+    	if(currentDialog) showDialog(currentDialog,false);
     }
 })
 
@@ -72,6 +75,13 @@ id('header').addEventListener('click',function() {
 	}
 	
 });
+
+// DISPLAY MESSAGE
+function display(message) {
+	id('message').innerText=message;
+	showDialog('messageDialog',true);
+}
+
 
 // SHOW/HIDE DIALOG
 function showDialog(dialog,show) {
@@ -180,10 +190,11 @@ id('deleteProject').addEventListener('click',function() {
 		console.log('delete roject failed');
 	}
 })
+/*
 id('cancelProject').addEventListener('click',function() {
 	showDialog('projectDialog',false);
 })
-
+*/
 id('wall').addEventListener('click',function() {
 	element.type='wall';
 	id('elementDialogTitle').innerText='add new wall element';
@@ -205,31 +216,12 @@ id('opening').addEventListener('click',function() {
 	id('uVal').style.display='block'; // openings have no layers - just a U-value
 	showDialog('elementDialog',true);
 })
+/*
 id('cancelAddElement').addEventListener('click',function() {
 	showDialog('addElementDialog',false);
 })
-
+*/
 // ELEMENT
-/*id('elementR').addEventListener('click',function() {
-	// repopulate list with this element's layers (just internal surface resistance initially)
-	var name=id('elementName').value;
-	console.log('show layer list for element '+name);
-	id('headerTitle').innerText=name;
-	id('headerValue').innerText='kW/m2K';
-	// populate layerList
-	if(element===null) { // new element - start with internal surface resistance
-		layer={};
-		layer.name='internal surface resistance';
-		// value depends on element type
-		// set layer.id when save to layers database
-		// when save new element set all layer.owners to its id
-	}
-	else { // get all layers with current element.id as owner
-		
-	}
-	id('list').innerHTML='';
-	showDialog('elementDialog',false);
-})*/
 id('addElement').addEventListener('click',function() {
 	element.name=id('elementName').value;
 	element.area=id('elementArea').value;
@@ -238,10 +230,10 @@ id('addElement').addEventListener('click',function() {
 	console.log('create new '+element.type+' element, '+element.name+' area '+element.area+'m2');
 	if(element.type!='opening') { // except openings first layer  is always...
 		layer={}; // ...inner surface...
-		layer.material=1; // ...first (pseudo)material
+		layer.m=1; // ...first (pseudo)material
 		layer.t=0; // ...no thickness...
 		layer.v=0; // ...or vapour resistance
-		// pseudoLayers[0]; // ...inner surface
+		layer.f=1; // 100% fraction
 		switch(element.type) { // thermal resistance depends on element type 
 			case 'wall':
 				layer.r=-0.15;
@@ -252,7 +244,7 @@ id('addElement').addEventListener('click',function() {
 			case 'roof':
 				layer.r=-0.12;
 		}
-		element.layers.push(0);
+		element.layers.push(layer);
 		element.u=-1*element.area/layer.r; // u-value (for surfaces negative r indicates resistance)
 	}
 	// add basic element to DB
@@ -266,7 +258,7 @@ id('addElement').addEventListener('click',function() {
 		depth++;
 		id('headerTitle').innerText=element.type+' '+element.name;
 		id('headerValue').innerText='0kW';
-		loadLayers();
+		listLayers();
 	}
 	addRequest.onerror=function(event) {console.log('error adding new element');};
 })
@@ -295,8 +287,9 @@ id('deleteElement').addEventListener('click',function() {
 		loadElements();
 	}
 })
+/*
 id('cancelElement').addEventListener('click',function() {showDialog('elementDialog',false);})
-
+*/
 id('simple').addEventListener('click',function() {
 	id('layerDialogTitle').innerText='add new simple layer';
 	combiFraction=1;
@@ -320,10 +313,11 @@ id('combi').addEventListener('click',function() {
 	id('deleteLayer').style.display='none';
 	showDialog('layerDialog',true);
 })
+/*
 id('cancelAddLayer').addEventListener('click',function() {
 	showDialog('addLayerDialog',false);
 })
-
+*/
 id('material').addEventListener('change',function() {
 	material=materials[id('material').value];
 	console.log('material changed to '+material.name+' - r: '+material.r+' thickness: '+material.t);
@@ -332,59 +326,50 @@ id('material').addEventListener('change',function() {
 })
 
 id('addLayer').addEventListener('click',function() {
+	material=materials[id('material').value];
+	if(material.id==0) {
+		console.log('NEW MATERIAL');
+		material={};
+		id('materialThickness').value='';
+		id('materialThickness').disabled=true;
+		showDialog('materialDialog',true);
+	}
 	layer={};
-	layer.material=material.id;
+	layer.m=material.id;
 	layer.t=id('thickness').value/1000; // convert mm to m
 	layer.r=material.r*layer.t;
 	layer.v=material.v*layer.t;
 	if(combiFraction<1) layer.f=id('fraction').value/100;
 	else layer.f=1;
-	console.log('save layer '+material.name+'; thickness: '+layer.t+'m; resistance: '+layer.r)
-	var dbTransaction=db.transaction('layers',"readwrite");
-	var dbObjectStore=dbTransaction.objectStore('layers');
-	var request=dbObjectStore.add(layer);
-	request.onsuccess=function(event) {
-		layer.id=event.target.result;
-		console.log('layer added to database: '+layer.id);
-		element.layers.push(layer.id);
-		dbTransaction=db.transaction('elements',"readwrite");
-		dbObjectStore=dbTransaction.objectStore('elements');
-		request=dbObjectStore.put(element);
-		request.onsuccess=function(event) {
-			console.log('element '+element.id+' updated');
-			// showDialog('addLayerDialog',false);
-			listLayers();
-			if(combiFraction<1) { // get second combi layer
-				id('layerDialogTitle').innerText='add second combi layer';
-				combiFraction=false;
-				id('thickness').value=layer.t*1000;
-				id('thickness').disabled=true;
-				combiFraction=id('fraction').value=(1-layer.f)*100;
-				id('fraction').disabled=true;
-				id('material').value=0;
-				// showDialog('layerDialog',true);
-			}
-			else {
-				id('thickness').disabled=false;
-				id('fraction').disabled=false;
-				showDialog('addLayerDialog',false);
-			}
-		}
-		request.onerror=function(event) {
-			console.log('update element failed');
-		}
-	}
-	request.onerror=function(event) {
-		console.log('add new layer failed');
-	} 
+	console.log('add layer '+material.name+'; thickness: '+layer.t+'m; resistance: '+layer.r);
+	element.layers.push(layer);
 })
 
+function setOption(opt) {
+	console.log('thickness option: '+opt.value);
+	material.thickness=opt.value;
+	id('materialThickness').disabled=(opt.value!=1);
+	id('materialThickness').value=(opt.value==0)?'0':'';
+	id('suffixR').innerText=id('suffixV').innerText=(opt.value<0)?'ivity':'ance';
+	id('unitR').innerText=(opt.value<0)?'m2K/W':'mK/W';
+	id('unitV').innerText='???'; // SET UNITS
+}
+
+id('addMaterial').addEventListener('click',function() {
+	console.log('add new material to database');
+})
+
+/*
 id('cancelLayer').addEventListener('click',function() {
 	showDialog('layerDialog',false);
 })
-
+*/
 function loadMaterials() {
 	materials=[];
+	var item={};
+	item.id=0;
+	item.name='NEW MATERIAL...';
+	materials.push(item);
 	var dbTransaction=db.transaction('materials',"readwrite");
 	var dbObjectStore=dbTransaction.objectStore('materials');
 	request=dbObjectStore.openCursor();
@@ -392,16 +377,16 @@ function loadMaterials() {
 		var cursor=event.target.result;
 		if(cursor) {
 			materials.push(cursor.value);
-			console.log("material id: "+cursor.value.id+": "+cursor.value.name+"; resistance: "+cursor.value.r+"; "+cursor.value.name);
+			console.log("material id: "+cursor.value.id+": "+cursor.value.id+"; resistance: "+cursor.value.r+"; "+cursor.value.name);
 			cursor.continue ();
 		}
 		else {
 			if(materials.length<1) seedMaterials();
 			id('material').innerHTML=''; // clear and repopulate materials selector
-			var opt;
+			var opt={};
 			for(var i in materials) {
 				opt=document.createElement('option');
-				opt.value=i;
+				opt.value=materials[i].id;
 				opt.innerText=materials[i].name;
 				id('material').appendChild(opt);
 			}
@@ -539,47 +524,11 @@ function listElements() {
 		listItem.addEventListener('click',function() {
 			element=elements[this.index];
 			depth=2;
-			// id('headerTitle').innerText=element.type+' '+element.name;
-			// id('headerValue').innerText='0kW';
-			loadLayers();
+			listLayers();
 		})
 		id('list').appendChild(listItem);
 	}
 	id('headerValue').innerText=Math.round(watts/100)/10+'kW';
-}
-
-function loadLayers() {
-	layers=[];
-	console.log('load layers for element '+element.id+' ('+element.name+')');
-	var dbTransaction=db.transaction('layers',"readwrite");
-	var dbObjectStore=dbTransaction.objectStore('layers');
-	var request;
-	for(var i in element.layers) {
-		/*
-		if(i<1) {
-			layer=pseudoLayers[i*-1];
-			layers.push(layer);
-			console.log('pseudoElement loaded - '+'layer '+i);
-		}
-		else {
-		*/
-		request=dbObjectStore.get(element.layers[i]);
-		request.onsuccess=function(event) {
-				layer=event.target.result;
-				console.log('layer '+i+': '+layer.material); 
-				layer.name=materials[layer.material-1].name;
-				layers.push(layer);
-				console.log('layer '+i+' loaded');
-			}
-		request.onerror=function(event) {
-				console.log('loading layer '+i+' failed');
-			}
-		// }
-	}
-	dbTransaction.oncomplete=function(event) {
-		console.log('layers loaded - list them');
-		listLayers();
-	}
 }
 
 function listLayers() {
@@ -589,15 +538,20 @@ function listLayers() {
 	id('headerTitle').innerText=element.name;
 	id('headerValue').innerText=Math.round(element.u*element.area)+'W';
 	id("list").innerHTML=""; // clear list
-	for(var i in layers) {
-		layer=layers[i];
-		console.log('layer '+i+': '+layer.name+'; t: '+layer.t+'; r: '+layer.r);
+	listItem=document.createElement('li');
+	// listItem.index=-1;
+	var html='<i><span class="item-t">mm</span><span class="item-f">%</span><span class="item-r">R</span></i>';
+	listItem.innerHTML=html;
+	id('list').appendChild(listItem);
+	for(var i in element.layers) {
+		layer=element.layers[i];
+		console.log('layer '+i+': '+materials[layer.m].name+'; t: '+layer.t+'; r: '+layer.r);
 		listItem=document.createElement('li');
 		listItem.index=i;
-		var html='<span class="item-t">'+layer.t*1000+'mm</span><span class="item-f">';
+		html='<span class="item-t">'+layer.t*1000+'mm</span><span class="item-f">';
 		if(layer.f<1) html+=layer.f*100+'%';
 		else html+=' ';
-		html+='</span><span class="item-text">'+layer.name+'</span><span class="item-r">';
+		html+='</span><span class="item-text">'+materials[layer.m].name+'</span><span class="item-r">';
 		if(layer.r<0) r-=layer.r; // negative r represents resistance...
 		else r=layer.t*layer.r; // ...otherwise resistivity
 		console.log('layer.r: '+layer.r+'; r: '+r);
@@ -606,6 +560,21 @@ function listLayers() {
 		console.log('r: '+r+'; item html: '+html);
 		listItem.innerHTML=html;
 		// add click action
+		listItem.addEventListener('click',function() {
+			console.log('layer material: '+materials[layer.m].name);
+			id('materialName').value=materials[layer.m].name;
+			id('materialThickness').value=layer.t*1000;
+			if(layer.r<0) {
+				id('unitR').innerText='m2K/W';}
+			else {
+				r=layer.r; // ...otherwise resistivity
+				id('suffixR').innerText='ivity';
+				id('unitR').innerText='mK/W';
+			}
+			id('materialR').value=r; // NOT SURE ABOUT THIS
+			id('materialV').value=layer.v; // NOT SURE ABOUT THIS
+			showDialog('materialDialog',true);
+		});
 		id('list').appendChild(listItem);
 	}
 	
@@ -614,8 +583,9 @@ function listLayers() {
 // DATA
 id('dataBackup').addEventListener('click',function() {showDialog('dataDialog',false); backup();});
 id('dataImport').addEventListener('click',function() {showDialog('importDialog',true)});
+/*
 id('dataCancel').addEventListener('click',function() {showDialog('dataDialog',false)});
-
+*/
 // RESTORE BACKUP
 id("fileChooser").addEventListener('change', function() {
 	var file=id('fileChooser').files[0];
@@ -639,16 +609,16 @@ id("fileChooser").addEventListener('change', function() {
 			request.onerror=function(e) {console.log("error adding item");};
 		}
 		showDialog('importDialog',false);
-		alert("data imported - restart");
+		display("data imported - restart");
   	});
   	fileReader.readAsText(file);
 });
 
-// CANCEL RESTORE
+/* CANCEL RESTORE
 id('cancelImport').addEventListener('click', function() {
     showDialog('importDialog',false);
 });
-
+*/
 // BACKUP
 function backup() {
   	console.log("EXPORT");
@@ -682,7 +652,7 @@ function backup() {
    			a.download=fileName;
     		document.body.appendChild(a);
     		a.click();
-			alert(fileName+" saved to downloads folder");
+			display(fileName+" saved to downloads folder");
 			var today=new Date();
 			lastSave=today.getMonth();
 			window.localStorage.setItem('lastSave',lastSave); // remember month of backup
@@ -721,6 +691,7 @@ request.onsuccess=function (event) {
 	loadMaterials();
 	// list.id=list.owner=null;
 };
+// ***** DELETE layers OBJECT STORE ******
 request.onupgradeneeded=function(event) {
 	var dbObjectStore=event.currentTarget.result.createObjectStore("projects",{
 		keyPath:'id',autoIncrement: true
@@ -730,17 +701,13 @@ request.onupgradeneeded=function(event) {
 		keyPath:'id',autoIncrement: true
 	});
 	console.log("elements database ready");
-	dbObjectStore=event.currentTarget.result.createObjectStore("layers",{
-		keyPath:'id',autoIncrement: true
-	});
-	console.log("layers database ready");
 	dbObjectStore=event.currentTarget.result.createObjectStore("materials",{
 		keyPath:'id',autoIncrement: true
 	});
 	console.log("materials database ready");
 }
 request.onerror=function(event) {
-	alert("indexedDB error code "+event.target.errorCode);
+	display("indexedDB error code "+event.target.errorCode);
 };
 	
 // implement service worker if browser is PWA friendly
