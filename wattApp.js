@@ -256,8 +256,7 @@ id('addElement').addEventListener('click',function() {
 		console.log('basic new element added to database');
 		showDialog('elementDialog',false);
 		depth++;
-		id('headerTitle').innerText=element.type+' '+element.name;
-		id('headerValue').innerText='0kW';
+		id('header').innerHTML=element.type+' '+element.name+'<span class="head1">%</span><span class="head2">mm</span><span class="head3">v</span><span class="head4">R</span>';
 		listLayers();
 	}
 	addRequest.onerror=function(event) {console.log('error adding new element');};
@@ -343,6 +342,8 @@ id('addLayer').addEventListener('click',function() {
 	else layer.f=1;
 	console.log('add layer '+material.name+'; thickness: '+layer.t+'m; resistance: '+layer.r);
 	element.layers.push(layer);
+	showDialog('layerDialog',false);
+	listLayers();
 })
 
 function setOption(opt) {
@@ -467,7 +468,8 @@ function loadProjects() {
 
 function listProjects() {
 	var listItem;
-	id('headerTitle').innerText='projects';
+	id('headerKey').innerHTML='projects<div class="tabR">kW</div>';
+	// id('headerValue').innerText='kW'; // <div class="tabR">kW</div>';
 	id("list").innerHTML=""; // clear list
 	for(var i in projects) {
 		project=projects[i];
@@ -513,14 +515,23 @@ function listElements() {
 	console.log('list '+elements.length+' elements for project '+project.id);
 	var listItem;
 	id("list").innerHTML=""; // clear list
-	id('headerTitle').innerText=project.name;
+	id('headerTitle').innerHTML=project.name+'<div class="tabR">W</div>';
+	var html='<div class="tabL">element</div>';
+	html+='<div class="tab3">m2</div>';
+	html+='<div class="tab4">U</div>';
+	html+='<div class="tabR">W</div>';
+	id('headerKey').innerHTML=html;
 	var watts=0;
 	for(var i in elements) {
 		element=elements[i];
 		listItem=document.createElement('li');
 		listItem.index=i;
-		listItem.innerText=element.name+' ('+element.type+')';
+		html='<div class="tabL">'+element.name+'</div>';
+		html+='<div class="tab3">'+Math.round(element.area)+'</div>';
+		html+='<div class="tab4">'+Math.round(element.u)+'</div>';
+		listItem.innerHTML=html;
 		watts+=element.area*element.u*project.delta;
+		// add area and U-value (or Watts?)
 		listItem.addEventListener('click',function() {
 			element=elements[this.index];
 			depth=2;
@@ -528,35 +539,39 @@ function listElements() {
 		})
 		id('list').appendChild(listItem);
 	}
-	id('headerValue').innerText=Math.round(watts/100)/10+'kW';
+	// id('headerValue').innerText=Math.round(watts/100)/10+'kW';
 }
 
 function listLayers() {
 	console.log('list layers for element '+element.name+' area: '+element.area+'; u=value: '+element.u);
 	var r=0; // element resistance
 	var listItem;
-	id('headerTitle').innerText=element.name;
-	id('headerValue').innerText=Math.round(element.u*element.area)+'W';
+	id('headerTitle').innerHTML=element.name+'<div class="tabR">W/m2K</div>';
+	// id('headerValue').innerText=Math.round(element.u*element.area)+'W';
 	id("list").innerHTML=""; // clear list
 	listItem=document.createElement('li');
-	// listItem.index=-1;
-	var html='<i><span class="item-t">mm</span><span class="item-f">%</span><span class="item-r">R</span></i>';
-	listItem.innerHTML=html;
-	id('list').appendChild(listItem);
+	var html='<div class="tabL">mm</div>';
+	html+='<div class="tab1">%</div>';
+	html+='<div class="tabR">R</div>';
+	id('headerKey').innerHTML=html;
+	// listItem.innerHTML=html;
+	// id('list').appendChild(listItem);
 	for(var i in element.layers) {
 		layer=element.layers[i];
 		console.log('layer '+i+': '+materials[layer.m].name+'; t: '+layer.t+'; r: '+layer.r);
 		listItem=document.createElement('li');
 		listItem.index=i;
-		html='<span class="item-t">'+layer.t*1000+'mm</span><span class="item-f">';
-		if(layer.f<1) html+=layer.f*100+'%';
-		else html+=' ';
-		html+='</span><span class="item-text">'+materials[layer.m].name+'</span><span class="item-r">';
+		html='<div class="tabL">'+layer.t*1000+'mm</div>';
+		html+='<div class="tab1">'+layer.f*100+'</div>';
+		if(layer.f<1) html+=layer.f*100+'%</div>';
+		else html+=' </div>';
+		html+='<div class="tab2">'+materials[layer.m].name+'</div>';
+		html+='<div class="tabR">';
 		if(layer.r<0) r-=layer.r; // negative r represents resistance...
 		else r=layer.t*layer.r; // ...otherwise resistivity
 		console.log('layer.r: '+layer.r+'; r: '+r);
 		r=Math.round(r*1000)/1000;
-		html+=r+'</span>';
+		html+=r+'</div>';
 		console.log('r: '+r+'; item html: '+html);
 		listItem.innerHTML=html;
 		// add click action

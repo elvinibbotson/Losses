@@ -12,7 +12,9 @@
 <body>
     
 <div id='header'>
-	<span id='headerTitle'>projects</span><span id='headerValue'></span><br>
+	<div id='headerTitle'>Watt</div>
+	<div id='headerValue'></div>
+	<div id='headerKey'></div>
 </div>
 
 <div id="main">
@@ -35,7 +37,6 @@
 		<option value='severe'>severe</option>
 	</select></p>
     <div class="dialog-buttons">
-    	<!--button id="cancelProject" class="icon-button"></button-->
     	<button id='addProject' class='icon-button'></button>
 		<button id='saveProject' class='icon-button'></button>
 		<button id='deleteProject' class='icon-button'></button>
@@ -49,7 +50,6 @@
 		<button id='roof' class='text-button'>roof...</button>
 		<button id='floor' class='text-button'>floor..</button>
 		<button id='opening' class='text-button'>opening</button>
-		<!--button id="cancelAddElement" class="icon-button"></button-->
 	</div>
 </div>
 
@@ -73,7 +73,6 @@
 		<button id='simple' class='text-button'>simple</button>
 		<button id='combi' class='text-button'>combi</button>
 		<button id='pseudo' class='text-button'>pseudo</button>
-		<!--button id="cancelAddLayer" class="icon-button"></button-->
 	</div>
 </div>
 
@@ -83,7 +82,6 @@
     <p>thickness <input type='number' id='thickness' maxlength='3' size='3' step='1'/>mm</p>
     <p id='fractionLine'>fraction <input type='number' id='fraction' maxlength='3' size='3' step='1'/>%</p>
     <div class="dialog-buttons">
-    	<!--button id="cancelLayer" class="icon-button"></button-->
     	<button id="addLayer" class="icon-button"></button>
     	<button id="saveLayer" class="icon-button"></button>
     	<button id="deleteLayer" class="icon-button"></button>
@@ -107,7 +105,6 @@
     <p>thermal resist<span id='suffixR'>ivity</span> <input type='number' id='materialR'> <span id='unitR'>mK/W</span></p>
     <p>vapour resist<span id='suffixV'>ivity</span> <input type='number' id='materialV'> <span id='unitV'>???</span></p>
     <div class="dialog-buttons">
-    	<!--button id="cancelMaterial" class="icon-button"></button-->
     	<button id="addMaterial" class="icon-button"></button>
 	</div>
 </div>
@@ -115,18 +112,13 @@
 <div id='dataDialog' class='dialog'>
 	<button id='dataBackup' class='text-button'>BACKUP</button>
 	<button id='dataImport' class='text-button'>IMPORT</button>
-	<!--button id='dataCancel' class='icon-button'></button-->
 </div>
 
 <div id="importDialog" class="dialog">
 	<div class="dialog-title">Load from file</div>
 	<input type="file" id="fileChooser">
-    <!--div class="dialog-buttons">
-		<button id="cancelImport" class="icon-button"></button>
-	</div-->
 </div>
 </div>
-
 <script src="wattApp.js" async></script>
 </body>
 </html>
