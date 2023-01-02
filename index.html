@@ -12,8 +12,8 @@
 <body>
     
 <div id='header'>
-	<div id='headerTitle'>Watt</div>
-	<div id='headerValue'></div>
+	<span id='headerTitle'>Watt</span>
+	<span id='headerValue'></span>
 	<div id='headerKey'></div>
 </div>
 
@@ -72,14 +72,13 @@
 	<div>
 		<button id='simple' class='text-button'>simple</button>
 		<button id='combi' class='text-button'>combi</button>
-		<button id='pseudo' class='text-button'>pseudo</button>
 	</div>
 </div>
 
 <div id='layerDialog' class='dialog'>
     <div id='layerDialogTitle' class='dialog-title'>layer</div>
-    <select id ='material'></select>
-    <p>thickness <input type='number' id='thickness' maxlength='3' size='3' step='1'/>mm</p>
+    <select id='material'></select>
+    <p>thickness <input type='number' id='thickness' maxlength='3' size='3' step='1'/>mm<button id='materialsButton' class='text-button'>materials</button></p>
     <p id='fractionLine'>fraction <input type='number' id='fraction' maxlength='3' size='3' step='1'/>%</p>
     <div class="dialog-buttons">
     	<button id="addLayer" class="icon-button"></button>

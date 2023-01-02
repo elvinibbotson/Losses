@@ -69,6 +69,12 @@ li {
 	width: 20%;
 }
 
+.tab0 {
+	position: absolute;
+	left: 5;
+	width: 40%;
+}
+
 .tab1 {
     position: absolute;
     left: 20%;
@@ -180,10 +186,14 @@ li {
 }
 
 #headerTitle {
+	top: 0;
 	font-weight: bold;
+	/* width: 60%; */
 }
 
 #headerValue {
+	top: 0;
+	/* width: 30%; */
 	margin-right: 20px;
 	float: right;
 }
@@ -237,6 +247,11 @@ li {
 
 #addProject, #addElement, #addLayer, #addMaterial {
 	background: url(newButton24px.svg) center center no-repeat;
+	float: right;
+}
+
+#materialsButton {
+	margin-right: 20px;
 	float: right;
 }
 
