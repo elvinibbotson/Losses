@@ -922,8 +922,7 @@ request.onsuccess=function (event) {
 };
 // ***** DELETE layers OBJECT STORE ******
 request.onupgradeneeded=function(event) {
-	var dbObjectStore=event.currentTarget.result.deleteObjectStore('levels');
-	dbObjectStore=event.currentTarget.result.deleteObjectStore('materials');
+	var dbObjectStore=event.currentTarget.result.deleteObjectStore('materials');
 	dbObjectStore=event.currentTarget.result.deleteObjectStore('elements');
 	dbObjectStore=event.currentTarget.result.deleteObjectStore('projects');
 	dbObjectStore=event.currentTarget.result.createObjectStore("projects",{
