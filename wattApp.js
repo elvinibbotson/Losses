@@ -914,7 +914,7 @@ function listPseudoLayers() {
 lastSave=window.localStorage.getItem('lastSave');
 console.log("last save: "+lastSave);
 // load items from database
-var request=window.indexedDB.open("wattDB");
+var request=window.indexedDB.open("wattDB",2);
 request.onsuccess=function (event) {
 	db=event.target.result;
 	console.log("DB open");
@@ -922,7 +922,11 @@ request.onsuccess=function (event) {
 };
 // ***** DELETE layers OBJECT STORE ******
 request.onupgradeneeded=function(event) {
-	var dbObjectStore=event.currentTarget.result.createObjectStore("projects",{
+	var dbObjectStore=event.currentTarget.result.deleteObjectStore('levels');
+	dbObjectStore=event.currentTarget.result.deleteObjectStore('materials');
+	dbObjectStore=event.currentTarget.result.deleteObjectStore('elements');
+	dbObjectStore=event.currentTarget.result.deleteObjectStore('projects');
+	dbObjectStore=event.currentTarget.result.createObjectStore("projects",{
 		keyPath:'id',autoIncrement: true
 	});
 	console.log("projects database ready");
