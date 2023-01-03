@@ -3,7 +3,6 @@ function id(el) {
 }
 'use strict';
 
-try{
 // GLOBAL VARIABLES	
 var db=null;
 var projects=[];
@@ -602,7 +601,7 @@ function listProjects() {
 		project=projects[i];
 		listItem=document.createElement('li');
 		listItem.index=i;
-		listItem.innerHTML='<div class="tabL">'+project.name+'</div><div class="tabR">'+Math.round(project.watts/100)/10+'</div>';
+		listItem.innerHTML='<div class="tabL">'+project.name+'</div><div class="tabR">'+Math.round(project.watts/100)/10+'</div><br>';
 		listItem.addEventListener('click',function() {
 			project=projects[this.index];
 			depth=1;
@@ -949,8 +948,4 @@ if (navigator.serviceWorker.controller) {
 	}).then(function(reg) {
 		console.log('Service worker has been registered for scope:'+ reg.scope);
 	});
-}
-}
-catch(err) {
-	alert('oops! '+err);
 }
