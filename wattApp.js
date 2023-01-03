@@ -146,7 +146,7 @@ id('addProject').addEventListener('click',function() {
 		loadProjects();
 	}
 	addRequest.onerror=function(event) {
-		console.log('save new project failed');
+		alert('save new project failed');
 	}
 })
 id('saveProject').addEventListener('click',function() {
@@ -189,7 +189,7 @@ id('deleteProject').addEventListener('click',function() {
 		loadProjects();
 	}
 	deleteRequest.onerror=function(event) {
-		console.log('delete roject failed');
+		alert('delete roject failed');
 	}
 })
 /*
@@ -262,7 +262,7 @@ id('addElement').addEventListener('click',function() {
 		// id('header').innerHTML=element.type+' '+element.name+'<span class="head1">%</span><span class="head2">mm</span><span class="head3">v</span><span class="head4">R</span>';
 		listLayers();
 	}
-	addRequest.onerror=function(event) {console.log('error adding new element');};
+	addRequest.onerror=function(event) {alert('error adding new element');};
 })
 id('saveElement').addEventListener('click',function() {
 	element.name=id('elementName').value;
@@ -403,7 +403,7 @@ id('addLayer').addEventListener('click',function() {
 			listLayers();
 		}
 	}
-	addRequest.onerror=function(event) {console.log('error updating element');};
+	addRequest.onerror=function(event) {alert('error updating element');};
 	// listLayers();
 })
 id('saveLayer').addEventListener('click',function() {
@@ -524,7 +524,7 @@ function seedMaterials() {
 		request.onsuccess=function(event) {
 			console.log(materials[i].name+' saved');
 		}
-		request.onerror=function(event) {console.log('failed to save '+materials[i].name);}
+		request.onerror=function(event) {alert('failed to save '+materials[i].name);}
 	}
 }
 function loadMaterials() {
@@ -558,7 +558,7 @@ function loadMaterials() {
 		}
 	}
 	request.onerror=function(event) {
-		console.log('failed to load materials');
+		alert('failed to load materials');
 	}
 }
 		
@@ -634,7 +634,7 @@ function loadElements() {
 		}
 		listElements();
 	}
-	request.onerror=function(event) {console.log('no elements loaded');}
+	request.onerror=function(event) {alert('no elements loaded');}
 }
 
 function listElements() {
@@ -675,7 +675,7 @@ function listElements() {
 		console.log('project updated');
 	}
 	putRequest.onerror=function() {
-		console.log('project save failed');
+		alert('project save failed');
 	}
 	id('headerValue').innerText=Math.round(watts/100)/10+'kW';
 }
@@ -827,7 +827,7 @@ id("fileChooser").addEventListener('change', function() {
 			request.onsuccess=function(e) {
 				console.log(items.length+" items added to database");
 			};
-			request.onerror=function(e) {console.log("error adding item");};
+			request.onerror=function(e) {alert("error adding item");};
 		}
 		showDialog('importDialog',false);
 		display("data imported - restart");
