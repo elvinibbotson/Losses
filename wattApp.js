@@ -528,7 +528,7 @@ function seedMaterials() {
 	}
 }
 function loadMaterials() {
-	console.log('load materials');
+	alert('load materials');
 	var opt=null;
 	materials=[];
 	id('material').innerHTML=''; // clear and repopulate materials selector
@@ -549,7 +549,7 @@ function loadMaterials() {
 			cursor.continue ();
 		}
 		else {
-			console.log(count+' materials loaded');
+			alert(count+' materials loaded');
 			if(count<1) {
 				seedMaterials();
 				alert('materials database seeded - restart');
@@ -571,7 +571,7 @@ function loadProjects() {
 		var cursor=event.target.result;
 		if(cursor) {
 			projects.push(cursor.value);
-			alert("project id: "+cursor.value.id+"; "+cursor.value.name);
+			console.log("project id: "+cursor.value.id+"; "+cursor.value.name);
 			cursor.continue();
 		}
 		else {
