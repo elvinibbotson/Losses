@@ -571,8 +571,8 @@ function loadProjects() {
 		var cursor=event.target.result;
 		if(cursor) {
 			projects.push(cursor.value);
-			console.log("project id: "+cursor.value.id+"; "+cursor.value.name);
-			cursor.continue ();
+			alert("project id: "+cursor.value.id+"; "+cursor.value.name);
+			cursor.continue();
 		}
 		else {
 			console.log("No more projects! "+projects.length+" loaded");
@@ -915,9 +915,7 @@ var request=window.indexedDB.open("wattDB");
 request.onsuccess=function (event) {
 	db=event.target.result;
 	console.log("DB open");
-	// listPseudoLayers();
 	loadMaterials();
-	// list.id=list.owner=null;
 };
 // ***** DELETE layers OBJECT STORE ******
 request.onupgradeneeded=function(event) {
@@ -932,8 +930,7 @@ request.onupgradeneeded=function(event) {
 	dbObjectStore=event.currentTarget.result.createObjectStore("materials",{
 		keyPath:'id',autoIncrement: true
 	});
-	// seedMaterials();
-	console.log("materials database ready and seeded");
+	console.log("materials database ready");
 }
 request.onerror=function(event) {
 	display("indexedDB error code "+event.target.errorCode);
