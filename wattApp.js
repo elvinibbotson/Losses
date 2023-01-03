@@ -849,8 +849,12 @@ function backup() {
 	var fileName="watt";
 	var date=new Date();
 	fileName+=date.getFullYear();
-	fileName+=(date.getMonth()+1);
-	fileName+=date.getDate()+".json";
+	var num=date.getMonth()+1;
+	if(num<10) fileName+='0';
+	fileName+=num;
+	num=date.getDate();
+	if(num<10) fileName+='0';
+	fileName+=num+".json";
 	var dbTransaction=db.transaction('projects',"readwrite");
 	var dbObjectStore=dbTransaction.objectStore('projects');
 	console.log("database ready");
