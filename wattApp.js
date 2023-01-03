@@ -601,7 +601,7 @@ function listProjects() {
 		project=projects[i];
 		listItem=document.createElement('li');
 		listItem.index=i;
-		listItem.innerHTML='<div class="tabL">'+project.name+'</div><div class="tabR">'+Math.round(project.watts/100)/10+'</div><br>';
+		listItem.innerHTML='<div class="tabText">'+trim(project.name,25)+'</div><div class="tabR">'+Math.round(project.watts/100)/10+'</div><br>';
 		listItem.addEventListener('click',function() {
 			project=projects[this.index];
 			depth=1;

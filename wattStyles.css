@@ -69,6 +69,12 @@ li {
 	width: 20%;
 }
 
+.tabText {
+	position: absolute;
+	left: 5;
+	width: 70%;
+}
+
 .tab0 {
 	position: absolute;
 	left: 5;
