@@ -136,13 +136,13 @@ id('addProject').addEventListener('click',function() {
 	project.delta=id('delta').value;
 	project.exposure=id('exposure').value;
 	project.watts=0; // heat loss for project will be calculated later
-	console.log('create new project, '+project.name);
+	alert('create new project, '+project.name);
 	var dbTransaction=db.transaction('projects',"readwrite");
 	var dbObjectStore=dbTransaction.objectStore('projects');
 	console.log("database ready");
 	var addRequest=dbObjectStore.add(project);
 	addRequest.onsuccess=function(event) {
-		console.log('new project saved');
+		alert('new project saved');
 		showDialog('projectDialog',false);
 		loadProjects();
 	}
