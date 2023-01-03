@@ -2,6 +2,8 @@ function id(el) {
 	return document.getElementById(el);
 }
 'use strict';
+
+try{
 // GLOBAL VARIABLES	
 var db=null;
 var projects=[];
@@ -592,14 +594,15 @@ function loadProjects() {
 
 function listProjects() {
 	var listItem;
-	id('headerKey').innerHTML='projects<div class="tabR">kW</div>';
-	// id('headerValue').innerText='kW'; // <div class="tabR">kW</div>';
+	id('headerTitle').innerText='Watt';
+	id('headerValue').innerText='';
+	id('headerKey').innerHTML='<div class="tabL">projects</div><div class="tabR">kW</div>';
 	id("list").innerHTML=""; // clear list
 	for(var i in projects) {
 		project=projects[i];
 		listItem=document.createElement('li');
 		listItem.index=i;
-		listItem.innerText=project.name;
+		listItem.innerHTML='<div class="tabL">'+project.name+'</div><div class="tabR">'+Math.round(project.watts/100)/10+'</div>';
 		listItem.addEventListener('click',function() {
 			project=projects[this.index];
 			depth=1;
@@ -639,7 +642,7 @@ function listElements() {
 	console.log('list '+elements.length+' elements for project '+project.id);
 	var listItem;
 	id("list").innerHTML=""; // clear list
-	id('headerTitle').innerHTML=project.name+'<div class="tabR">W</div>';
+	id('headerTitle').innerHTML=project.name;
 	var html='<div class="tabL">element</div>';
 	html+='<div class="tab3">m2</div>';
 	html+='<div class="tab4">U</div>';
@@ -652,10 +655,10 @@ function listElements() {
 		listItem.index=i;
 		html='<div class="tab0">'+trim(element.name,12)+'</div>';
 		html+='<div class="tab3">'+Math.round(element.area)+'</div>';
-		html+='<div class="tab4">'+element.u+'</div><br>';
+		html+='<div class="tab4">'+element.u+'</div>';
+		html+='<div class="tabR">'+Math.round(element.u*element.area)+'</div><br>';
 		listItem.innerHTML=html;
 		watts+=element.area*element.u*project.delta;
-		// add area and U-value (or Watts?)
 		listItem.addEventListener('click',function() {
 			element=elements[this.index];
 			console.log('show element id '+element.id);
@@ -663,6 +666,17 @@ function listElements() {
 			listLayers();
 		})
 		id('list').appendChild(listItem);
+	}
+	project.watts=watts;
+	var dbTransaction=db.transaction('projects',"readwrite");
+	var dbObjectStore=dbTransaction.objectStore('projects');
+	console.log("database ready");
+	putRequest=dbObjectStore.put(project);
+	putRequest.onsuccess=function() {
+		console.log('project updated');
+	}
+	putRequest.onerror=function() {
+		console.log('project save failed');
 	}
 	id('headerValue').innerText=Math.round(watts/100)/10+'kW';
 }
@@ -935,4 +949,8 @@ if (navigator.serviceWorker.controller) {
 	}).then(function(reg) {
 		console.log('Service worker has been registered for scope:'+ reg.scope);
 	});
+}
+}
+catch(err) {
+	alert('oops! '+err);
 }

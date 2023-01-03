@@ -100,8 +100,8 @@ li {
 }
 
 .tabR {
-	float: right;
-	width: 15%;
+	position: fixed;
+	right: 10px;
 }
 
 .dialog {
