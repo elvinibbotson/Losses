@@ -540,7 +540,7 @@ function loadMaterials() {
 		var cursor=event.target.result;
 		if(cursor) {
 			materials.push(cursor.value);
-			console.log("material id: "+cursor.value.id+"; resistance: "+cursor.value.r+"; "+cursor.value.name);
+			alert("material id: "+cursor.value.id+"; resistance: "+cursor.value.r+"; "+cursor.value.name);
 			opt=document.createElement('option');
 			opt.value=cursor.value.id;
 			opt.innerText=cursor.value.name;
@@ -588,6 +588,9 @@ function loadProjects() {
 			}
 			listProjects();
 		}
+	}
+	request.onerror=function(event) {
+		alert('loading materials failed');
 	}
 }
 
