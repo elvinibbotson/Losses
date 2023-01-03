@@ -135,13 +135,13 @@ id('addProject').addEventListener('click',function() {
 	project.delta=id('delta').value;
 	project.exposure=id('exposure').value;
 	project.watts=0; // heat loss for project will be calculated later
-	alert('create new project, '+project.name);
+	console.log('create new project, '+project.name);
 	var dbTransaction=db.transaction('projects',"readwrite");
 	var dbObjectStore=dbTransaction.objectStore('projects');
 	console.log("database ready");
 	var addRequest=dbObjectStore.add(project);
 	addRequest.onsuccess=function(event) {
-		alert('new project saved');
+		console.log('new project saved');
 		showDialog('projectDialog',false);
 		loadProjects();
 	}
@@ -189,7 +189,7 @@ id('deleteProject').addEventListener('click',function() {
 		loadProjects();
 	}
 	deleteRequest.onerror=function(event) {
-		alert('delete roject failed');
+		alert('delete project failed');
 	}
 })
 /*
@@ -528,7 +528,7 @@ function seedMaterials() {
 	}
 }
 function loadMaterials() {
-	alert('load materials');
+	console.log('load materials');
 	var opt=null;
 	materials=[];
 	id('material').innerHTML=''; // clear and repopulate materials selector
@@ -540,7 +540,7 @@ function loadMaterials() {
 		var cursor=event.target.result;
 		if(cursor) {
 			materials.push(cursor.value);
-			alert("material id: "+cursor.value.id+"; resistance: "+cursor.value.r+"; "+cursor.value.name);
+			console.log("material id: "+cursor.value.id+"; resistance: "+cursor.value.r+"; "+cursor.value.name);
 			opt=document.createElement('option');
 			opt.value=cursor.value.id;
 			opt.innerText=cursor.value.name;
@@ -549,10 +549,10 @@ function loadMaterials() {
 			cursor.continue ();
 		}
 		else {
-			alert(count+' materials loaded');
+			console.log(count+' materials loaded');
 			if(count<1) {
 				seedMaterials();
-				alert('materials database seeded - restart');
+				display('materials database seeded - restart');
 			}
 			loadProjects();
 		}
