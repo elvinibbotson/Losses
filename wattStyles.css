@@ -240,13 +240,13 @@ li {
 	width: 70px;
 }
 
-#deleteProject, #deleteElement, #deleteLayer {
+#deleteProject, #deleteElement, #deleteLayer, #deleteMaterial {
 	float: left;
 	margin-right: 48px;
 	background: url(deleteButton24px.svg) center center no-repeat;
 }
 
-#saveProject, #saveElement, #saveLayer {
+#saveProject, #saveElement, #saveLayer, #saveMaterial {
     background: url(okButton24px.svg) center center no-repeat;
     float: right;
 }
@@ -259,6 +259,10 @@ li {
 #materialsButton {
 	margin-right: 20px;
 	float: right;
+}
+
+#materialV {
+	width: 5em;
 }
 
 #fileChooser {

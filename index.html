@@ -91,20 +91,22 @@
 <div id='materialDialog' class='dialog'>
     <div id='noteTitle' class='dialog-title'>name/description</div>
     <input type='text' id="materialName" size="15"/>
-    <p>thickness <input type='number' id='materialThickness'>mm<br>
-    <thicknessOptions>
+    <p><thicknessOptions>
     	<input type="radio" id="variable" name="thickness" value="-1" checked onchange="setOption(this);">
 			<label for="variable" class='radio-label'>variable</label><br>
     	<input type="radio" id="membrane" name="thickness" value="0" onchange="setOption(this);">
-			<label for="membrane" class='radio-label'>negligable</label><br>
+			<label for="membrane" class='radio-label'>negligible</label><br>
 		<input type="radio" id="defined" name="thickness" value="1" onchange="setOption(this);">
 			<label for="defined" class='radio-label'>defined</label><br>
 	</thicknessOptions>
+	thickness <input type='number' id='materialThickness'> mm
     </p>
-    <p>thermal resist<span id='suffixR'>ivity</span> <input type='number' id='materialR'> <span id='unitR'>mK/W</span></p>
-    <p>vapour resist<span id='suffixV'>ivity</span> <input type='number' id='materialV'> <span id='unitV'>???</span></p>
+    <p>thermal resist<span id='suffixR'>ivity</span> <input type='number' id='materialR' max='100'> <span id='unitR'>mK/W</span></p>
+    <p>vapour resist<span id='suffixV'>ivity</span> <input type='number' id='materialV' max='100000'> <span id='unitV'>MNs/gm</span></p>
     <div class="dialog-buttons">
     	<button id="addMaterial" class="icon-button"></button>
+    	<button id="saveMaterial" class="icon-button"></button>
+    	<button id="deleteMaterial" class="icon-button"></button>
 	</div>
 </div>
 

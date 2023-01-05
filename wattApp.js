@@ -37,9 +37,18 @@ id('main').addEventListener('touchend', function(event) {
     if(Math.abs(drag.y)>50) return; // ignore vertical drags
     if((drag.x<-50)&&(depth>0)) { // drag right to go back...
         depth--;
-        console.log('bck to depth '+depth);
-        if(depth>0) loadElements(); // back to elements...
-        else loadProjects(); // ...or projects list
+        console.log('back to depth '+depth);
+        if(currentDialog) showDialog(currentDialog,false);
+        switch(depth) {
+        	case 0:
+        		loadProjects();
+        		break;
+        	case 1:
+        		loadElements();
+        		break;
+        	case 2:
+        		listLayers();
+        }
     }
     else if(drag.x>50) { // drag left to close dialogs
     	if(currentDialog) showDialog(currentDialog,false);
@@ -92,10 +101,12 @@ function showDialog(dialog,show) {
     if(show) {
         id(dialog).style.display='block';
         currentDialog=dialog;
+        id('newButton').style.display='none';
     }
     else {
         id(dialog).style.display='none';
         currentDialog=null;
+        id('newButton').style.display='block';
     }
 }
 
@@ -123,9 +134,24 @@ id('newButton').addEventListener('click',function(){
 			id('deleteElement').style.display='none';
 			showDialog('addElementDialog',true);
 			break;
-		case 2:
+		case 2: // add new layer to element
 			console.log('add new layer to element '+element.id);
-			showDialog('addLayerDialog',true); // add new layer to element
+			layer={};
+			showDialog('addLayerDialog',true);
+			break;
+		case 3: // add new material
+			console.log('add new material');
+			id('materialName').value='';
+			id('variable').checked=true;
+			id('materialThickness').value='';
+			id('materialThickness').disabled=true;
+			id('suffixR').innerText=id('suffixV').innerText='ivity';
+			id('unitR').innerText='mK/W';
+			id('unitV').innerText='MNs/gm';
+			id('deleteMaterial').style.display='none';
+			id('addMaterial').style.display='block';
+			id('saveMaterial').style.display='none';
+			showDialog('materialDialog',true);
 	}
 })
 
@@ -192,11 +218,7 @@ id('deleteProject').addEventListener('click',function() {
 		alert('delete project failed');
 	}
 })
-/*
-id('cancelProject').addEventListener('click',function() {
-	showDialog('projectDialog',false);
-})
-*/
+
 id('wall').addEventListener('click',function() {
 	element.type='wall';
 	id('elementDialogTitle').innerText='add new wall element';
@@ -218,11 +240,7 @@ id('opening').addEventListener('click',function() {
 	id('uVal').style.display='block'; // openings have no layers - just a U-value
 	showDialog('elementDialog',true);
 })
-/*
-id('cancelAddElement').addEventListener('click',function() {
-	showDialog('addElementDialog',false);
-})
-*/
+
 // ELEMENT
 id('addElement').addEventListener('click',function() {
 	element.name=id('elementName').value;
@@ -248,6 +266,9 @@ id('addElement').addEventListener('click',function() {
 		}
 		element.layers.push(layer);
 		element.u=-1*element.area/layer.r; // u-value (for surfaces negative r indicates resistance)
+	}
+	else { // openings have specified U-value
+		element.u=id('uVal').value;
 	}
 	// add basic element to DB
 	var dbTransaction=db.transaction('elements',"readwrite");
@@ -325,7 +346,34 @@ id('combi').addEventListener('click',function() {
 	id('deleteLayer').style.display='none';
 	showDialog('layerDialog',true);
 })
+id('material').addEventListener('change',function() {
+	var m=id('material').value;
+	console.log('material: '+m);
+	var i=0;
+	var found=false;
+	while(i<materials.length&!found) {
+		if(materials[i].id==m) found=true;
+		else i++;
+	}
+	material=materials[i];
+	console.log('material selected: '+material.name);
+	if(material.t<0) {
+		id('thickness').value='';
+		id('thickness').disabled=false;
+	}
+	else {
+		id('thickness').value=-1*material.t;
+		id('thickness').disabled=true;
+		layer.t=-1*material.t/1000; // metres
+	}
+	layer.m=m;
+})
+id('materialsButton').addEventListener('click',function() {
+	showDialog('layerDialog',false);
+	listMaterials();
+})
 id('addLayer').addEventListener('click',function() {
+	/*
 	var n=id('material').value; // id of selected material
 	console.log('material.id is '+n);
 	var i=0;
@@ -338,7 +386,8 @@ id('addLayer').addEventListener('click',function() {
 	console.log('material selected: '+material.name);
 	layer={};
 	layer.m=material.id;
-	layer.t=id('thickness').value/1000; // convert mm to m
+	*/
+	if(layer.t==null) layer.t=id('thickness').value/1000; // convert mm to m
 	layer.r=material.r;
 	if(layer.r<0) layer.r=-1*layer.r; // negative r - resistance
 	else layer.r*=layer.t; // resistance depends on layer thickness
@@ -481,11 +530,6 @@ id('addMaterial').addEventListener('click',function() {
 	console.log('add new material to database');
 })
 
-/*
-id('cancelLayer').addEventListener('click',function() {
-	showDialog('layerDialog',false);
-})
-*/
 function seedMaterials() {
 	console.log('seed with basic materials');
 	materials=[{'name':'inner surface','r':0.1,'v':0,'t':0},
@@ -513,6 +557,9 @@ function seedMaterials() {
 		{'name':'expanded polystyrene','r':27.7,'v':200,'t':-1},
 		{'name':'foamed polyurethene','r':38.5,'v':100,'t':-1},
 		{'name':'polyisocyanurate','r':45,'v':150,'t':-1},
+		{'name':'cement render','r':0.83,'v':100,'t':-1},
+		{'name':'silicon render','r':1.1,'v':150,'t':-1},
+		{'name':'single-ply roofing','r':-0.0015,'v':-25,'t':1.2},
 		{'name':'roof tiles + battens','r':-0.16,'v':0,'t':-1}];
 		// r<0: r=-R thermal resistance*-1; v<0: v=-V vapour resistance*-1; t=-1: variable thickness
 	console.log('save '+materials.length+' seed materials');
@@ -799,9 +846,52 @@ function listLayers() {
 	element.u=1/totalR;
 	console.log('element U-value: '+element.u);
 	element.u=Math.round(element.u*100)/100;
-	// put U-value into header
-	// id('headerTitle').innerHTML=element.name+'<div class="tabR">U:'+element.u+'</div>';
 	id('headerValue').innerHTML='U:'+element.u;
+}
+
+function listMaterials() {
+	console.log('list materials');
+	depth=3;
+	id('headerTitle').innerText='Watt';
+	id('headerValue').innerText='';
+	id('headerKey').innerText='materials';
+	id("list").innerHTML=""; // clear list
+	var listItem;
+	for(var i=6;i<materials.length;i++) { // skipping 'pseudo' materials, list others
+		material=materials[i];
+		listItem=document.createElement('li');
+		listItem.index=i;
+		listItem.innerText=material.name;
+		listItem.addEventListener('click',function() {
+			material=materials[this.index];
+			id('materialName').value=material.name;
+			id('materialThickness').disabled=true; // default settings
+			id('materialThickness').value='';
+			id('suffixR').innerText=id('suffixV').innerText='ance';
+			id('unitR').innerText='m2K/W';
+			id('unitV').innerText='MNs/g';
+			if(material.t<0) { // variable thickness
+				id('materialThickness').disabled=true;
+				id('variable').checked=true;
+				id('suffixR').innerText=id('suffixV').innerText='ivity';
+				id('unitR').innerText='mK/W';
+				id('unitV').innerText='MNs/gm';
+			}
+			else if(material.t>0) { // defined thickness
+				id('materialThickness').disabled=false;
+				id('materialThickness').value=material.t*1000; // mm
+				id('defined').checked=true;
+			}
+			else id('membrane').checked=true; // negligible thickness
+			id('materialR').value=material.r;
+			id('materialV').value=material.v;
+			id('deleteMaterial').style.display='block';
+			id('addMaterial').style.display='none';
+			id('saveMaterial').style.display='block';
+			showDialog('materialDialog',true);
+		})
+		id('list').appendChild(listItem);
+	}
 }
 
 // DATA
@@ -926,10 +1016,32 @@ request.onsuccess=function (event) {
 };
 // ***** DELETE layers OBJECT STORE ******
 request.onupgradeneeded=function(event) {
-	dbObjectStore=event.currentTarget.result.createObjectStore("projects",{
-		keyPath:'id',autoIncrement: true
-	});
-	console.log("projects database ready");
+	if(!db.objectStoreNames.contains('projects')) {
+		dbObjectStore=event.currentTarget.result.createObjectStore("projects",{
+			keyPath:'id',autoIncrement: true});
+			console.log("projects store created");
+	}
+	else console.log("projects store exists");
+	if(!db.objectStoreNames.contains('elements')) {
+		dbObjectStore=event.currentTarget.result.createObjectStore("elements",{
+		keyPath:'id',autoIncrement: true});
+		console.log("elements store created");
+	}
+	else console.log("elements store exists");
+	if(!db.objectStoreNames.contains('materials')) {
+		dbObjectStore=event.currentTarget.result.createObjectStore("materials",{
+		keyPath:'id',autoIncrement: true});
+		console.log("materials store created");
+	}
+	else {
+		console.log("materials store exists");
+		var transaction=db.transaction('materials');
+		var objectStore=transaction.objectStore('materials');
+		var clearRequest=objectStore.clear();
+		clearRequest.onsuccess=console.log('materials store emptied');
+		clearRequest.onerror=alert('unable to clear materials store');
+	}
+	/* old code...
 	dbObjectStore=event.currentTarget.result.createObjectStore("elements",{
 		keyPath:'id',autoIncrement: true
 	});
@@ -938,6 +1050,7 @@ request.onupgradeneeded=function(event) {
 		keyPath:'id',autoIncrement: true
 	});
 	console.log("materials database ready");
+	*/
 }
 request.onerror=function(event) {
 	display("indexedDB error code "+event.target.errorCode);
