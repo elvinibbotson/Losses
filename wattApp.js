@@ -14,6 +14,7 @@ var layer=null;
 var combiFlag=0; // used for combi layers
 var materials=[]; // all defined materials
 var material=null;
+var materialIndex=0;
 var list={};
 var currentListItem=null;
 var currentDialog='messageDialog';
@@ -93,7 +94,6 @@ function display(message) {
 	showDialog('messageDialog',true);
 }
 
-
 // SHOW/HIDE DIALOG
 function showDialog(dialog,show) {
     console.log('show '+dialog+': '+show);
@@ -148,6 +148,7 @@ id('newButton').addEventListener('click',function(){
 			id('suffixR').innerText=id('suffixV').innerText='ivity';
 			id('unitR').innerText='mK/W';
 			id('unitV').innerText='MNs/gm';
+			id('materialR').value=id('materialV').value='';
 			id('deleteMaterial').style.display='none';
 			id('addMaterial').style.display='block';
 			id('saveMaterial').style.display='none';
@@ -268,7 +269,7 @@ id('addElement').addEventListener('click',function() {
 		element.u=-1*element.area/layer.r; // u-value (for surfaces negative r indicates resistance)
 	}
 	else { // openings have specified U-value
-		element.u=id('uVal').value;
+		element.u=id('elementUval').value;
 	}
 	// add basic element to DB
 	var dbTransaction=db.transaction('elements',"readwrite");
@@ -288,7 +289,8 @@ id('addElement').addEventListener('click',function() {
 id('saveElement').addEventListener('click',function() {
 	element.name=id('elementName').value;
 	element.area=id('elementArea').value;
-	console.log('update '+element.type+' element '+element.name);
+	if(element.type=='opening') element.u=id('elementUval').value;
+	console.log('update '+element.type+' element '+element.name+' area: '+element.area+' Uvalue: '+element.u);
 	var dbTransaction=db.transaction('elements',"readwrite");
 	var dbObjectStore=dbTransaction.objectStore('elements');
 	console.log("database ready");
@@ -301,7 +303,6 @@ id('saveElement').addEventListener('click',function() {
 })
 id('deleteElement').addEventListener('click',function() {
 	console.log('delete element '+element.name);
-	// delete element in database
 	dbTransaction=db.transaction('elements',"readwrite");
 	dbObjectStore=dbTransaction.objectStore('elements');
 	request=dbObjectStore.delete(element.id);
@@ -528,6 +529,75 @@ function setOption(opt) {
 
 id('addMaterial').addEventListener('click',function() {
 	console.log('add new material to database');
+	material={};
+	material.name=id('materialName').value;
+	if(id('variable').checked) { // variable thickness
+		material.t=-1;
+		material.r=id('materialR').value;
+		material.v=id('materialV').value;
+	}
+	else if(id('membrane').checked) { // negligible thickness
+		material.t=0;
+		material.r=-1*id('materialR').value;
+		material.v=-1*id('materialV').value;
+	}
+	else { // defined thickness
+		material.t=id('materialThickness').value; // mm
+		material.r=-1*id('materialR').value;
+		material.v=-1*id('materialV').value;
+	}
+	var dbTransaction=db.transaction('materials',"readwrite");
+	var dbObjectStore=dbTransaction.objectStore('materials');
+	console.log("database ready to add "+material.name);
+	var addRequest=dbObjectStore.add(material);
+	addRequest.onsuccess=function(event) {
+		var n=event.target.result;
+		console.log('material added - id: '+n);
+		material.id=n;
+		materials.push(material);
+		showDialog('materialDialog',false);
+	}
+	addRequest.onerror=function(event) {alert('error adding material');};
+})
+id('saveMaterial').addEventListener('click',function() {
+	console.log('update material in database');
+	material.name=id('materialName').value;
+	if(id('variable').checked) { // variable thickness
+		material.t=-1;
+		material.r=id('materialR').value;
+		material.v=id('materialV').value;
+	}
+	else if(id('membrane').checked) { // negligible thickness
+		material.t=0;
+		material.r=-1*id('materialR').value;
+		material.v=-1*id('materialV').value;
+	}
+	else { // defined thickness
+		material.t=id('materialThickness').value; // mm
+		material.r=-1*id('materialR').value;
+		material.v=-1*id('materialV').value;
+	}
+	var dbTransaction=db.transaction('materials',"readwrite");
+	var dbObjectStore=dbTransaction.objectStore('materials');
+	console.log("database ready to update "+material.name);
+	var request=dbObjectStore.put(material);
+	request.onsuccess=function(event) {
+		console.log('material updated');
+		materials[materialIndex]=material;
+		showDialog('materialDialog',false);
+	}
+	addRequest.onerror=function(event) {alert('error updating material');};
+})
+id('deleteMaterial').addEventListener('click',function() {
+	console.log('delete material '+material.name);
+	dbTransaction=db.transaction('materials',"readwrite");
+	dbObjectStore=dbTransaction.objectStore('materials');
+	request=dbObjectStore.delete(material.id);
+	request.onsuccess=function(event) {
+		console.log('material deleted');
+		showDialog('materialDialog',false);
+	}
+	request.onerror=function(event) {alert('unable to delete material');}
 })
 
 function seedMaterials() {
@@ -681,8 +751,8 @@ function loadElements() {
 		}
 		else {
 			console.log("No more elements! "+elements.length+" loaded");
+			listElements();
 		}
-		listElements();
 	}
 	request.onerror=function(event) {alert('no elements loaded');}
 }
@@ -705,18 +775,31 @@ function listElements() {
 		html='<div class="tab0">'+trim(element.name,12)+'</div>';
 		html+='<div class="tab3">'+Math.round(element.area)+'</div>';
 		html+='<div class="tab4">'+element.u+'</div>';
-		html+='<div class="tabR">'+Math.round(element.u*element.area)+'</div><br>';
+		html+='<div class="tabR">'+Math.round(element.u*element.area*project.delta)+'</div><br>';
 		listItem.innerHTML=html;
 		watts+=element.area*element.u*project.delta;
+		console.log('element: '+element.name+'; area: '+element.area+'; U-value: '+element.u+'; heat loss: '+element.area*element.u*project.delta+'W');
 		listItem.addEventListener('click',function() {
 			element=elements[this.index];
 			console.log('show element id '+element.id);
-			depth=2;
-			listLayers();
+			if(element.type=='opening') {
+				id('elementName').value=element.name;
+				id('elementArea').value=element.area;
+				id('elementUval').value=element.u;
+				id('deleteElement').style.display='block';
+				id('addElement').style.display='none';
+				id('saveElement').style.display='block';
+				showDialog('elementDialog',true);
+			}
+			else {
+				depth=2;
+				listLayers();
+			}
 		})
 		id('list').appendChild(listItem);
 	}
 	project.watts=watts;
+	console.log('project heat loss: '+watts+'W');
 	var dbTransaction=db.transaction('projects',"readwrite");
 	var dbObjectStore=dbTransaction.objectStore('projects');
 	console.log("database ready");
@@ -864,6 +947,7 @@ function listMaterials() {
 		listItem.innerText=material.name;
 		listItem.addEventListener('click',function() {
 			material=materials[this.index];
+			materialIndex=this.index;
 			id('materialName').value=material.name;
 			id('materialThickness').disabled=true; // default settings
 			id('materialThickness').value='';
