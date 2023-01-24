@@ -21,7 +21,36 @@ var currentDialog='messageDialog';
 var depth=0; // 0 is project list; 1 is element list; 2 is layer laist
 var lastSave=null;
 var dragStart={};
-// var pseudoLayers=[];
+var seedMaterials=[{'name':'inner surface','r':0.1,'v':0,'t':0},
+		{'name':'ventilated cavity','r':-0.15,'v':0,'t':-1},
+		{'name':'closed cavity','r':-0.25,'v':0,'t':-1},
+		{'name':'unheated space','r':-0.5,'v':0,'t':0},
+		{'name':'ground','r':0.1,'v':0,'t':0},
+		{'name':'outer surface','r':0.1,'v':0,'t':0},
+		{'name':'concrete','r':0.69,'v':200,'t':-1},
+		{'name':'concrete - lightweight','r':2.4,'v':50,'t':-1},
+		{'name':'thermal concrete blockwork','r':4.5,'v':50,'t':-1},
+		{'name':'brick (outer leaf)','r':1.19,'v':50,'t':-1},
+		{'name':'stone','r':0.7,'v':50,'t':-1},
+		{'name':'plaster - lightweight','r':6.24,'v':50,'t':-1},
+		{'name':'plasterboard','r':6.24,'v':50,'t':-1},
+		{'name':'timber','r':6.93,'v':50,'t':-1},
+		{'name':'plywood','r':6.93,'v':1500,'t':-1},
+		{'name':'osb','r':7.7,'v':1000,'t':-1},
+		{'name':'fibreboard','r':16,'v':25,'t':-1},
+		{'name':'glass','r':0.95,'v':50000,'t':-1},
+		{'name':'breather membrane','r':0,'v':0.1,'t':0},
+		{'name':'polythene','r':0,'v':500,'t':0},
+		{'name':'metal foil','r':0,'v':10000,'t':0},
+		{'name':'mineral wool','r':25.6,'v':1,'t':-1},
+		{'name':'expanded polystyrene','r':27.7,'v':200,'t':-1},
+		{'name':'foamed polyurethene','r':38.5,'v':100,'t':-1},
+		{'name':'polyisocyanurate','r':45,'v':150,'t':-1},
+		{'name':'cement render','r':0.83,'v':100,'t':-1},
+		{'name':'silicon render','r':1.1,'v':150,'t':-1},
+		{'name':'single-ply roofing','r':-0.0015,'v':-25,'t':1.2},
+		{'name':'roof tiles + battens','r':-0.16,'v':0,'t':-1}];
+		// r<0: r=-R thermal resistance*-1; v<0: v=-V vapour resistance*-1; t=-1: variable thickness
  
 // DRAG TO CHANGE DEPTH
 id('main').addEventListener('touchstart', function(event) {
@@ -599,7 +628,7 @@ id('deleteMaterial').addEventListener('click',function() {
 	}
 	request.onerror=function(event) {alert('unable to delete material');}
 })
-
+/*
 function seedMaterials() {
 	console.log('seed with basic materials');
 	materials=[{'name':'inner surface','r':0.1,'v':0,'t':0},
@@ -644,6 +673,7 @@ function seedMaterials() {
 		request.onerror=function(event) {alert('failed to save '+materials[i].name);}
 	}
 }
+*/
 function loadMaterials() {
 	console.log('load materials');
 	var opt=null;
@@ -652,7 +682,7 @@ function loadMaterials() {
 	var count=0;
 	var dbTransaction=db.transaction('materials',"readwrite");
 	var dbObjectStore=dbTransaction.objectStore('materials');
-	request=dbObjectStore.openCursor();
+	var request=dbObjectStore.openCursor();
 	request.onsuccess=function(event) {
 		var cursor=event.target.result;
 		if(cursor) {
@@ -666,11 +696,24 @@ function loadMaterials() {
 			cursor.continue ();
 		}
 		else {
-			console.log(count+' materials loaded');
+			// NEW APPROACH TO ADDING NEW BASE MATERIALS TO DATABASE
+			console.log(count+' materials loaded - check for new ones');
+			for(var i in seedMaterials) {
+				material=seedMaterials[i];
+				if(materials.contains(material)) continue;
+				var addRequest=dbObjectStore.add(material);
+				addRequest.onsuccess=function(event) {
+					console.log(material.name+' added');
+					materials.push(material);
+				}
+				addRequest.onerror=function(event) {alert('failed to add '+materials.name);}
+			}
+			/*
 			if(count<1) {
 				seedMaterials();
 				display('materials database seeded - restart');
 			}
+			*/
 			loadProjects();
 		}
 	}
@@ -981,9 +1024,7 @@ function listMaterials() {
 // DATA
 id('dataBackup').addEventListener('click',function() {showDialog('dataDialog',false); backup();});
 id('dataImport').addEventListener('click',function() {showDialog('importDialog',true)});
-/*
-id('dataCancel').addEventListener('click',function() {showDialog('dataDialog',false)});
-*/
+
 // RESTORE BACKUP
 id("fileChooser").addEventListener('change', function() {
 	var file=id('fileChooser').files[0];
@@ -1118,6 +1159,7 @@ request.onupgradeneeded=function(event) {
 		keyPath:'id',autoIncrement: true});
 		console.log("materials store created");
 	}
+	/*
 	else {
 		console.log("materials store exists");
 		var transaction=db.transaction('materials');
@@ -1126,15 +1168,6 @@ request.onupgradeneeded=function(event) {
 		clearRequest.onsuccess=console.log('materials store emptied');
 		clearRequest.onerror=alert('unable to clear materials store');
 	}
-	/* old code...
-	dbObjectStore=event.currentTarget.result.createObjectStore("elements",{
-		keyPath:'id',autoIncrement: true
-	});
-	console.log("elements database ready");
-	dbObjectStore=event.currentTarget.result.createObjectStore("materials",{
-		keyPath:'id',autoIncrement: true
-	});
-	console.log("materials database ready");
 	*/
 }
 request.onerror=function(event) {
