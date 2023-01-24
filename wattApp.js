@@ -698,9 +698,17 @@ function loadMaterials() {
 		else {
 			// NEW APPROACH TO ADDING NEW BASE MATERIALS TO DATABASE
 			console.log(count+' materials loaded - check for new ones');
+			var found=false;
+			var j=0;
 			for(var i in seedMaterials) {
 				material=seedMaterials[i];
-				if(materials.contains(material)) continue;
+				found=false;
+				j=0;
+				while((j<materials.length)&&(found==false)) {
+					if(materials[j].name==material.name) found=true;
+					j++;
+				}
+				if(found) continue;
 				var addRequest=dbObjectStore.add(material);
 				addRequest.onsuccess=function(event) {
 					console.log(material.name+' added');
