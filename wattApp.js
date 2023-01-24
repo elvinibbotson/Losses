@@ -1100,6 +1100,7 @@ request.onsuccess=function (event) {
 };
 // ***** DELETE layers OBJECT STORE ******
 request.onupgradeneeded=function(event) {
+	db=event.currentTarget.result;
 	if(!db.objectStoreNames.contains('projects')) {
 		dbObjectStore=event.currentTarget.result.createObjectStore("projects",{
 			keyPath:'id',autoIncrement: true});
