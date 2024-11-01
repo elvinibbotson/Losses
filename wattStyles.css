@@ -43,11 +43,15 @@ body {
 input[type=text],[type=number] {
 	font-size: 1.5em;
 	height: 24px;
+	color: white;
+	background-color: dimgray;
 }
 
 select {
 	font-size: 1.5em;
 	height: 32px;
+	color: white;
+	background-color: dimgray;
 }
 
 textarea {
@@ -111,13 +115,18 @@ li {
 }
 
 .dialog {
-  background: dimgray;
-  position: absolute;
-  top: 0;
-  padding: 5px;
-  width: 100%;
-  z-index: 20;
-  display: none;
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	padding: 10px;
+	margin: 10px;
+	border: solid white 2px;
+	border-radius: 10px;
+	color: white;
+	background-color: gray;
+	z-index: 20;
+	display: none;
 }
 
 .dialog-title {
@@ -187,7 +196,7 @@ li {
     padding: 10px;
     color: white;
 	font-size: 1.2em;
-    background-color: black;
+    background-color: dimgray;
     z-index: 10;
 }
 
@@ -266,5 +275,8 @@ li {
 }
 
 #fileChooser {
+	height: 30px;
+	width: 100%;
 	font-size: 1.5em;
+	background-color: gray;
 }

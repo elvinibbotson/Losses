@@ -48,7 +48,7 @@ var seedMaterials=[{'name':'inner surface','r':0.1,'v':0,'t':0},
 		{'name':'polyisocyanurate','r':45,'v':150,'t':-1},
 		{'name':'cement render','r':0.83,'v':100,'t':-1},
 		{'name':'silicon render','r':1.1,'v':150,'t':-1},
-		{'name':'single-ply roofing','r':-0.0015,'v':-25,'t':1.2},
+		{'name':'single-ply roofing','r':-0.0015,'v':-25,'t':-1.2},
 		{'name':'roof tiles + battens','r':-0.16,'v':0,'t':-1}];
 		// r<0: r=-R thermal resistance*-1; v<0: v=-V vapour resistance*-1; t=-1: variable thickness
  
@@ -387,14 +387,16 @@ id('material').addEventListener('change',function() {
 	}
 	material=materials[i];
 	console.log('material selected: '+material.name);
-	if(material.t<0) {
-		id('thickness').value='';
-		id('thickness').disabled=false;
-	}
-	else {
-		id('thickness').value=-1*material.t;
-		id('thickness').disabled=true;
-		layer.t=-1*material.t/1000; // metres
+	if(combiFlag==0) {
+		if(material.t<0) {
+			id('thickness').value='';
+			id('thickness').disabled=false;
+		}
+		else {
+			id('thickness').value=material.t;
+			id('thickness').disabled=true;
+			layer.t=material.t/1000; // metres
+		}
 	}
 	layer.m=m;
 })
@@ -473,8 +475,10 @@ id('addLayer').addEventListener('click',function() {
 	addRequest.onsuccess=function(event) {
 		console.log('element updated');
 		if(combiFlag>0) { // first of 2 combi materials - set up for 2nd - same thickness,...
+			layer={};
+			layer.f=combiFlag;
 			id('fraction').value=(1-combiFlag)*100; // ...complimentary fraction...
-			id('fraction').disabled=true; // ...cannot change...
+			id('fractionLine').disabled=true; // ...cannot change...
 			id('material').value=0; // ...reset material
 		}
 		else { // for simple layers, that's it - refresh layer list
@@ -540,10 +544,32 @@ id('saveLayer').addEventListener('click',function() {
 	// DEAL WITH m=5 GROUND - CALCULATE FROM AREA/PERIMETER
 	element.layers[layer.n]=layer; // update in element layers[] array
 	showDialog('layerDialog',false);
-	listLayers();
+	var dbTransaction=db.transaction('elements',"readwrite");
+	var dbObjectStore=dbTransaction.objectStore('elements');
+	console.log("database ready to update element "+element.id);
+	var request=dbObjectStore.put(element);
+	request.onsuccess=function(event) {
+		console.log('element updated');
+		showDialog('layerDialog',false);
+		listLayers();
+	}
+	request.onerror=function(event) {alert('error updating element');};
+	// listLayers();
 })
 id('deleteLayer').addEventListener('click',function() {
-	
+	console.log('delete layer '+layer.n+'; m: '+layer.m+'; fraction: '+layer.f);
+	var n=layer.n;
+	element.layers.splice(n,1); // remove this layer
+	var dbTransaction=db.transaction('elements',"readwrite");
+	var dbObjectStore=dbTransaction.objectStore('elements');
+	console.log("database ready to update element "+element.id);
+	var request=dbObjectStore.put(element);
+	request.onsuccess=function(event) {
+		console.log('element updated');
+		showDialog('layerDialog',false);
+		listLayers();
+	}
+	addRequest.onerror=function(event) {alert('error updating element');};
 })
 
 function setOption(opt) {
@@ -709,7 +735,8 @@ function loadMaterials() {
 					j++;
 				}
 				if(found) continue;
-				var addRequest=dbObjectStore.add(material);
+				console.log('add '+material.name);
+				var addRequest=dbObjectStore.add(material); 
 				addRequest.onsuccess=function(event) {
 					console.log(material.name+' added');
 					materials.push(material);
@@ -908,10 +935,10 @@ function listLayers() {
 		listItem.innerHTML=html;
 		listItem.addEventListener('click',function() {
 			layer=element.layers[this.index];
-			// console.log('show layer '+layer.n);
-			// console.log('material.id: '+layer.m+' '+layer.t/1000+'mm thick '+layer.f*100+'%');
+			// layer.n=this.index;
 			id('material').value=layer.m; // select material
 			id('thickness').value=layer.t*1000; // mm
+			id('thickness').disabled=false;
 			id('fraction').value=(layer.f<1)?layer.f*100:'';
 			id('fractionLine').disabled=true;
 			id('addLayer').style.display='none';
@@ -964,23 +991,34 @@ function listLayers() {
 	}
 	Rb=lowerR=Ra; // sums equal at this stage
 	console.log('simple layers total resistance: '+Ra);
-	for(i=0;i<aLayers.length;i++) { // for each combi layer pair...
-		 Ra+=element.layers[aLayers[i]].r;
-		 Rb+=element.layers[bLayers[i]].r;
+	if(aLayers.length>0) {
+		for(i=0;i<aLayers.length;i++) { // for each combi layer pair...
+			Ra+=element.layers[aLayers[i]].r;
+			Rb+=element.layers[bLayers[i]].r;
+		}
+		console.log('Ra: '+Ra+'; Rb: '+Rb);
+		for(i=0;i<aLayers.length;i++) {
+			upperR+=1/(element.layers[aLayers[i]].f/Ra+element.layers[bLayers[i]].f/Rb);
+			combiR+=1/(element.layers[aLayers[i]].f/element.layers[aLayers[i]].r+element.layers[bLayers[i]].f/element.layers[bLayers[i]].r);
+		}
+		console.log('upperR: '+upperR+'; combiR: '+combiR);
+		lowerR+=combiR;
+		totalR=(upperR+lowerR)/2;
+		console.log('lowerR: '+lowerR+'; totalR: '+totalR);
 	}
-	console.log('Ra: '+Ra+'; Rb: '+Rb);
-	for(i=0;i<aLayers.length;i++) {
-		 upperR+=1/(element.layers[aLayers[i]].f/Ra+element.layers[bLayers[i]].f/Rb);
-		 combiR+=1/(element.layers[aLayers[i]].f/element.layers[aLayers[i]].r+element.layers[bLayers[i]].f/element.layers[bLayers[i]].r);
-	}
-	console.log('upperR: '+upperR+'; combiR: '+combiR);
-	lowerR+=combiR;
-	totalR=(upperR+lowerR)/2;
-	console.log('lowerR: '+lowerR+'; totalR: '+totalR);
+	else totalR=Ra; // no combi layers - just sum layers
 	element.u=1/totalR;
 	console.log('element U-value: '+element.u);
 	element.u=Math.round(element.u*100)/100;
 	id('headerValue').innerHTML='U:'+element.u;
+	var dbTransaction=db.transaction('elements',"readwrite");
+	var dbObjectStore=dbTransaction.objectStore('elements');
+	console.log("database ready to update element "+element.id);
+	var request=dbObjectStore.put(element);
+	request.onsuccess=function(event) {
+		console.log('element updated');
+	}
+	request.onerror=function(event) {alert('error updating element');};
 }
 
 function listMaterials() {
@@ -1043,17 +1081,31 @@ id("fileChooser").addEventListener('change', function() {
 	  	var data=evt.target.result;
 		var json=JSON.parse(data);
 		console.log("json: "+json);
-		var items=json.items;
-		console.log(items.length+" items loaded");
-		var dbTransaction=db.transaction('items',"readwrite");
-		var dbObjectStore=dbTransaction.objectStore('items');
-		for(var i=0;i<items.length;i++) {
-			console.log("save "+items[i].text);
-			var request=dbObjectStore.add(items[i]);
+		var projects=json.projects;
+		var elements=json.elements;
+		console.log(projects.length+" projects");
+		var dbTransaction=db.transaction('projects',"readwrite");
+		var dbObjectStore=dbTransaction.objectStore('projects');
+		for(var i=0;i<projects.length;i++) {
+			console.log("add "+projects[i].name);
+			var request=dbObjectStore.add(projects[i]);
 			request.onsuccess=function(e) {
-				console.log(items.length+" items added to database");
+				console.log("project added to database");
 			};
-			request.onerror=function(e) {alert("error adding item");};
+			request.onerror=function(e) {console.log("error adding project")};
+		}
+		if(elements) {
+			console.log(elements.length+" elements");
+			dbTransaction=db.transaction('elements',"readwrite");
+			dbObjectStore=dbTransaction.objectStore('elements');
+			for(i=0;i<elements.length;i++) {
+				console.log("save "+elements[i].name);
+				request=dbObjectStore.add(elements[i]);
+				request.onsuccess=function(e) {
+					console.log("element added to database");
+				};
+				request.onerror=function(e) {alert("error adding element");};
+			}
 		}
 		showDialog('importDialog',false);
 		display("data imported - restart");
@@ -1118,25 +1170,6 @@ function trim(text,len) {
 	
 }
 
-/* BUILD LIST OF PSEUDO LAYERS
-function listPseudoLayers() {
-	var names=['inner surface','ventilated cavity','unventilated cavity','outer surface','ground'];
-	var opt=null;
-	for(var i in names) {
-		layer={};
-		layer.name=names[i];
-		layer.t=layer.r=layer.v=0;
-		layer.f=1;
-		pseudoLayers.push(layer);
-		opt=document.createElement('option');
-		opt.value=names[i];
-		opt.innerText=names[i];
-		id('pseudoLayers').appendChild(opt);
-	}
-	console.log(pseudoLayers.length+' pseudoLayers listed');
-}
-*/
-
 // START-UP CODE
 lastSave=window.localStorage.getItem('lastSave');
 console.log("last save: "+lastSave);
@@ -1147,7 +1180,6 @@ request.onsuccess=function (event) {
 	console.log("DB open");
 	loadMaterials();
 };
-// ***** DELETE layers OBJECT STORE ******
 request.onupgradeneeded=function(event) {
 	db=event.currentTarget.result;
 	if(!db.objectStoreNames.contains('projects')) {
@@ -1167,16 +1199,7 @@ request.onupgradeneeded=function(event) {
 		keyPath:'id',autoIncrement: true});
 		console.log("materials store created");
 	}
-	/*
-	else {
-		console.log("materials store exists");
-		var transaction=db.transaction('materials');
-		var objectStore=transaction.objectStore('materials');
-		var clearRequest=objectStore.clear();
-		clearRequest.onsuccess=console.log('materials store emptied');
-		clearRequest.onerror=alert('unable to clear materials store');
-	}
-	*/
+
 }
 request.onerror=function(event) {
 	display("indexedDB error code "+event.target.errorCode);
