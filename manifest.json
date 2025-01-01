@@ -1,0 +1,17 @@
+{
+  "name": "Losses PWA",
+  "short_name": "Losses",
+  "icons": [
+	{
+		"src": "Losses.png",
+		"sizes": "512x512",
+		"type": "image/png",
+		"purpose": "any maskable"
+	}
+  ],
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation":"portrait",
+  "background_color": "black",
+  "theme_color": "black"
+}
